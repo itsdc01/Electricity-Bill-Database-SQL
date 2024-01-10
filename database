@@ -1,0 +1,195 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema ebs
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema ebs
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `ebs` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+-- -----------------------------------------------------
+-- Schema miniproject
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema miniproject
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `miniproject` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+USE `ebs` ;
+
+-- -----------------------------------------------------
+-- Table `ebs`.`pays`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`pays` (
+  `bill_meter_no` VARCHAR(20) NOT NULL,
+  `rent_cost_per_unit` INT NOT NULL,
+  `idpays` VARCHAR(45) NULL,
+  PRIMARY KEY (`bill_meter_no`, `rent_cost_per_unit`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`bill`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`bill` (
+  `meter_no` VARCHAR(20) NOT NULL,
+  `month` VARCHAR(30) NULL DEFAULT NULL,
+  `units` VARCHAR(20) NULL DEFAULT NULL,
+  `totalbill` VARCHAR(20) NULL DEFAULT NULL,
+  `status` VARCHAR(20) NULL DEFAULT NULL,
+  `pays_bill_meter_no` VARCHAR(20) NOT NULL,
+  `pays_rent_cost_per_unit` INT NOT NULL,
+  PRIMARY KEY (`meter_no`, `pays_bill_meter_no`, `pays_rent_cost_per_unit`),
+  INDEX `fk_bill_pays1_idx` (`pays_bill_meter_no` ASC, `pays_rent_cost_per_unit` ASC) VISIBLE,
+  CONSTRAINT `fk_bill_pays1`
+    FOREIGN KEY (`pays_bill_meter_no` , `pays_rent_cost_per_unit`)
+    REFERENCES `ebs`.`pays` (`bill_meter_no` , `rent_cost_per_unit`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`Manages`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`Manages` (
+  `idManages` INT NOT NULL,
+  PRIMARY KEY (`idManages`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`meter_info`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`meter_info` (
+  `meter_no` VARCHAR(20) NOT NULL,
+  `meter_location` VARCHAR(20) NULL DEFAULT NULL,
+  `meter_type` VARCHAR(20) NULL DEFAULT NULL,
+  `phase_code` VARCHAR(20) NULL DEFAULT NULL,
+  `bill_type` VARCHAR(20) NULL DEFAULT NULL,
+  `days` VARCHAR(20) NULL DEFAULT NULL,
+  `Manages_idManages` INT NOT NULL,
+  PRIMARY KEY (`meter_no`, `Manages_idManages`),
+  INDEX `fk_meter_info_Manages1_idx` (`Manages_idManages` ASC) VISIBLE,
+  CONSTRAINT `fk_meter_info_Manages1`
+    FOREIGN KEY (`Manages_idManages`)
+    REFERENCES `ebs`.`Manages` (`idManages`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`customer`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`customer` (
+  `name` VARCHAR(20) NULL DEFAULT NULL,
+  `meter_no` VARCHAR(20) NOT NULL,
+  `address` VARCHAR(50) NULL DEFAULT NULL,
+  `city` VARCHAR(30) NULL DEFAULT NULL,
+  `state` VARCHAR(30) NULL DEFAULT NULL,
+  `email` VARCHAR(40) NULL DEFAULT NULL,
+  `phone` VARCHAR(20) NULL DEFAULT NULL,
+  `pays_bill_meter_no` VARCHAR(20) NOT NULL,
+  `pays_rent_cost_per_unit` INT NOT NULL,
+  `Manages_idManages` INT NOT NULL,
+  PRIMARY KEY (`meter_no`, `pays_bill_meter_no`, `pays_rent_cost_per_unit`, `Manages_idManages`),
+  INDEX `fk_customer_pays1_idx` (`pays_bill_meter_no` ASC, `pays_rent_cost_per_unit` ASC) VISIBLE,
+  INDEX `fk_customer_Manages1_idx` (`Manages_idManages` ASC) VISIBLE,
+  CONSTRAINT `manages`
+    FOREIGN KEY (`meter_no`)
+    REFERENCES `ebs`.`meter_info` (`meter_no`),
+  CONSTRAINT `fk_customer_pays1`
+    FOREIGN KEY (`pays_bill_meter_no` , `pays_rent_cost_per_unit`)
+    REFERENCES `ebs`.`pays` (`bill_meter_no` , `rent_cost_per_unit`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_customer_Manages1`
+    FOREIGN KEY (`Manages_idManages`)
+    REFERENCES `ebs`.`Manages` (`idManages`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`login`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`login` (
+  `meter_no` VARCHAR(20) NULL DEFAULT NULL,
+  `username` VARCHAR(30) NULL DEFAULT NULL,
+  `name` VARCHAR(30) NULL DEFAULT NULL,
+  `password` VARCHAR(20) NULL DEFAULT NULL,
+  `user` VARCHAR(20) NULL DEFAULT NULL,
+  `customer_meter_no` VARCHAR(20) NOT NULL,
+  `customer_pays_bill_meter_no` VARCHAR(20) NOT NULL,
+  `customer_pays_rent_cost_per_unit` INT NOT NULL,
+  `customer_Manages_idManages` INT NOT NULL,
+  PRIMARY KEY (`customer_meter_no`, `customer_pays_bill_meter_no`, `customer_pays_rent_cost_per_unit`, `customer_Manages_idManages`),
+  CONSTRAINT `fk_login_customer1`
+    FOREIGN KEY (`customer_meter_no` , `customer_pays_bill_meter_no` , `customer_pays_rent_cost_per_unit` , `customer_Manages_idManages`)
+    REFERENCES `ebs`.`customer` (`meter_no` , `pays_bill_meter_no` , `pays_rent_cost_per_unit` , `Manages_idManages`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`rent`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`rent` (
+  `cost_per_unit` INT NOT NULL,
+  `meter_rent` INT NULL DEFAULT NULL,
+  `service_charge` INT NULL DEFAULT NULL,
+  `pays_bill_meter_no` VARCHAR(20) NOT NULL,
+  `pays_rent_cost_per_unit` INT NOT NULL,
+  PRIMARY KEY (`cost_per_unit`, `pays_bill_meter_no`, `pays_rent_cost_per_unit`),
+  INDEX `fk_rent_pays1_idx` (`pays_bill_meter_no` ASC, `pays_rent_cost_per_unit` ASC) VISIBLE,
+  CONSTRAINT `fk_rent_pays1`
+    FOREIGN KEY (`pays_bill_meter_no` , `pays_rent_cost_per_unit`)
+    REFERENCES `ebs`.`pays` (`bill_meter_no` , `rent_cost_per_unit`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `ebs`.`tax`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ebs`.`tax` (
+  `cost_per_unit` VARCHAR(20) NULL DEFAULT NULL,
+  `meter_rent` VARCHAR(20) NULL DEFAULT NULL,
+  `service_charge` VARCHAR(20) NULL DEFAULT NULL,
+  `service_tax` VARCHAR(20) NULL DEFAULT NULL,
+  `swacch_bharat_cess` VARCHAR(20) NULL DEFAULT NULL,
+  `fixed_tax` VARCHAR(20) NULL DEFAULT NULL,
+  `pays_bill_meter_no` VARCHAR(20) NOT NULL,
+  `pays_rent_cost_per_unit` INT NOT NULL,
+  PRIMARY KEY (`pays_bill_meter_no`, `pays_rent_cost_per_unit`),
+  CONSTRAINT `fk_tax_pays1`
+    FOREIGN KEY (`pays_bill_meter_no` , `pays_rent_cost_per_unit`)
+    REFERENCES `ebs`.`pays` (`bill_meter_no` , `rent_cost_per_unit`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
